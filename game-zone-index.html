@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAME ZONE — Play Free Games</title>
+<style>
+:root{--cyan:#00e5ff;--pink:#ff36d1;--bg:#080b16;--panel:#171d35}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#fff}
+header{text-align:center;padding:24px 12px;background:#11152a;border-bottom:2px solid var(--cyan)}
+header h1{margin:0;color:var(--cyan);font-size:clamp(28px,7vw,40px);text-shadow:0 0 14px #00e5ff66}
+header p{color:#b9c2d8;margin:8px 0 0}
+nav{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;background:#151a30;padding:16px}
+nav a{color:#fff;text-decoration:none;font-weight:bold}
+nav a:hover{color:var(--cyan)}
+.hero{text-align:center;padding:52px 16px;background:linear-gradient(120deg,#15153d,#092c40)}
+.hero h2{color:var(--cyan);font-size:clamp(27px,6vw,42px);margin:0 0 12px}
+.hero p{color:#d0d7e7}
+button{border:0;border-radius:9px;padding:12px 17px;margin:5px;background:var(--cyan);color:#07111c;font-size:15px;font-weight:bold;cursor:pointer}
+button:hover{background:var(--pink);color:white}
+.games{padding:34px 14px;text-align:center}
+.games h2,#playArea h2{color:var(--cyan);margin:0 0 22px}
+.game-container{display:flex;justify-content:center;flex-wrap:wrap;gap:16px}
+.card{background:var(--panel);width:min(100%,260px);padding:23px;border:1px solid #00e5ff88;border-radius:15px;transition:.2s}
+.card:hover{transform:translateY(-4px);box-shadow:0 0 18px #00e5ff44}
+.emoji{font-size:48px;margin-bottom:12px}
+.card p{color:#bdc5d7;line-height:1.45}
+#playArea{display:none;background:#11152a;margin:18px auto;padding:24px 12px;max-width:650px;text-align:center;border:1px solid var(--cyan);border-radius:15px}
+#status{color:var(--cyan);font-size:18px;margin:12px auto 18px;min-height:24px}
+#snakeCanvas{width:min(300px,90vw);height:auto;background:#050a10;border:2px solid var(--cyan);touch-action:none}
+#ticBoard{display:grid;grid-template-columns:repeat(3,min(24vw,82px));gap:7px;justify-content:center}
+.cell{width:min(24vw,82px);height:min(24vw,82px);padding:0;margin:0;font-size:32px;background:#26304d;color:var(--cyan)}
+.choice{font-size:32px;min-width:78px}
+.controls{display:grid;grid-template-columns:repeat(3,52px);justify-content:center;gap:5px;margin:12px}
+.controls button{margin:0;padding:12px 4px}
+footer{text-align:center;background:#11152a;padding:22px;color:#aab3c7;margin-top:25px}
+.small{color:#aeb9d0;font-size:14px}
+</style>
+</head>
+<body>
+<header><h1>🎮 GAME ZONE</h1><p>YOUR ULTIMATE GAMING WORLD</p></header>
+<nav><a href="#home">HOME</a><a href="#games">GAMES</a><a href="#about">ABOUT</a></nav>
+<section class="hero" id="home"><h2>WELCOME GAMER!</h2><p>Play fun games directly in your browser.</p><button onclick="document.getElementById('games').scrollIntoView({behavior:'smooth'})">EXPLORE GAMES</button></section>
+<section class="games" id="games"><h2>🔥 CHOOSE YOUR GAME</h2><div class="game-container">
+<div class="card"><div class="emoji">🐍</div><h3>Snake Game</h3><p>Eat food and grow your snake.</p><button onclick="startGame('snake')">PLAY NOW</button></div>
+<div class="card"><div class="emoji">❌</div><h3>Tic-Tac-Toe</h3><p>Challenge a friend on the same device.</p><button onclick="startGame('tic')">PLAY NOW</button></div>
+<div class="card"><div class="emoji">✊</div><h3>Rock Paper Scissors</h3><p>Try to beat the computer.</p><button onclick="startGame('rps')">PLAY NOW</button></div>
+</div></section>
+<section id="playArea"><h2 id="gameTitle">GAME</h2><div id="status">Let's play!</div><div id="gameContent"></div><br><button onclick="resetGame()">RESTART</button><button onclick="closeGame()">BACK TO GAMES</button></section>
+<section class="games" id="about"><h2>ABOUT GAME ZONE</h2><p>Three simple browser games, made for fun.</p><p class="small">These are local games; online multiplayer and user accounts are not included.</p></section>
+<footer>© 2026 GAME ZONE</footer>
+<script>
+let currentGame='',snake=[],food={},direction='RIGHT',snakeTimer=null,score=0,board=[],ticTurn='X',ticOver=false,rpsScore={you:0,computer:0};
+const content=document.getElementById('gameContent'),statusBox=document.getElementById('status');
+function startGame(game){clearInterval(snakeTimer);currentGame=game;document.getElementById('playArea').style.display='block';document.getElementById('playArea').scrollIntoView({behavior:'smooth'});if(game==='snake'){document.getElementById('gameTitle').textContent='🐍 SNAKE GAME';setupSnake()}if(game==='tic'){document.getElementById('gameTitle').textContent='❌ TIC-TAC-TOE';setupTic()}if(game==='rps'){document.getElementById('gameTitle').textContent='✊ ROCK PAPER SCISSORS';setupRPS()}}
+function closeGame(){clearInterval(snakeTimer);document.getElementById('playArea').style.display='none';document.getElementById('games').scrollIntoView({behavior:'smooth'})}
+function resetGame(){if(currentGame)startGame(currentGame)}
+function setupSnake(){score=0;direction='RIGHT';snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}];placeFood();content.innerHTML='<canvas id="snakeCanvas" width="300" height="300"></canvas><p>Score: <span id="score">0</span></p><div class="controls"><span></span><button onclick="setDirection(\\'UP\\')">⬆️</button><span></span><button onclick="setDirection(\\'LEFT\\')">⬅️</button><button onclick="setDirection(\\'DOWN\\')">⬇️</button><button onclick="setDirection(\\'RIGHT\\')">➡️</button></div><p class="small">Use arrow keys or the on-screen buttons.</p>';statusBox.textContent='Eat the red food!';drawSnake();snakeTimer=setInterval(moveSnake,140)}
+function placeFood(){do{food={x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*20)}}while(snake.some(p=>p.x===food.x&&p.y===food.y))}
+function drawSnake(){const canvas=document.getElementById('snakeCanvas');if(!canvas)return;const ctx=canvas.getContext('2d');ctx.clearRect(0,0,300,300);ctx.fillStyle='#ff3860';ctx.fillRect(food.x*15,food.y*15,15,15);snake.forEach((p,i)=>{ctx.fillStyle=i===0?'#00e5ff':'#00a88f';ctx.fillRect(p.x*15,p.y*15,14,14)})}
+function setDirection(d){const opposite={UP:'DOWN',DOWN:'UP',LEFT:'RIGHT',RIGHT:'LEFT'};if(d!==opposite[direction])direction=d}
+function moveSnake(){let head={...snake[0]};if(direction==='UP')head.y--;if(direction==='DOWN')head.y++;if(direction==='LEFT')head.x--;if(direction==='RIGHT')head.x++;const eating=head.x===food.x&&head.y===food.y;const body= eating?snake:snake.slice(0,-1);if(head.x<0||head.x>=20||head.y<0||head.y>=20||body.some(p=>p.x===head.x&&p.y===head.y)){clearInterval(snakeTimer);statusBox.textContent='Game over! Final score: '+score;return}snake.unshift(head);if(eating){score+=10;document.getElementById('score').textContent=score;placeFood()}else snake.pop();drawSnake()}
+document.addEventListener('keydown',e=>{if(currentGame!=='snake')return;const keys={ArrowUp:'UP',ArrowDown:'DOWN',ArrowLeft:'LEFT',ArrowRight:'RIGHT'};if(keys[e.key]){e.preventDefault();setDirection(keys[e.key])}});
+function setupTic(){board=['','','','','','','','',''];ticTurn='X';ticOver=false;content.innerHTML='<div id="ticBoard">'+board.map((_,i)=>'<button class="cell" onclick="ticMove('+i+')"></button>').join('')+'</div><p class="small">Two players, same device: X goes first.</p>';statusBox.textContent="Player X's turn";updateTic()}
+function ticMove(i){if(board[i]||ticOver)return;board[i]=ticTurn;updateTic();const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];if(wins.some(line=>line.every(j=>board[j]===ticTurn))){statusBox.textContent='🎉 Player '+ticTurn+' wins!';ticOver=true}else if(board.every(v=>v!=='')){statusBox.textContent="It's a draw!";ticOver=true}else{ticTurn=ticTurn==='X'?'O':'X';statusBox.textContent="Player "+ticTurn+"'s turn"}}
+function updateTic(){document.querySelectorAll('.cell').forEach((cell,i)=>cell.textContent=board[i])}
+function setupRPS(){rpsScore={you:0,computer:0};content.innerHTML='<h3>Choose your move!</h3><button class="choice" onclick="playRPS(\\'Rock\\')">✊</button><button class="choice" onclick="playRPS(\\'Paper\\')">✋</button><button class="choice" onclick="playRPS(\\'Scissors\\')">✌️</button><h3 id="rpsResult">Make your choice</h3><p>You: <span id="youScore">0</span></p><p>Computer: <span id="computerScore">0</span></p><p class="small">First to 5 points wins the match.</p>';statusBox.textContent='First to 5 points wins!'}
+function playRPS(user){if(rpsScore.you>=5||rpsScore.computer>=5)return;const choices=['Rock','Paper','Scissors'],computer=choices[Math.floor(Math.random()*3)];let result='';if(user===computer)result="It's a tie!";else if((user==='Rock'&&computer==='Scissors')||(user==='Paper'&&computer==='Rock')||(user==='Scissors'&&computer==='Paper')){result='🎉 You win this round!';rpsScore.you++}else{result='💻 Computer wins this round!';rpsScore.computer++}document.getElementById('rpsResult').textContent='You: '+user+' | Computer: '+computer+' — '+result;document.getElementById('youScore').textContent=rpsScore.you;document.getElementById('computerScore').textContent=rpsScore.computer;if(rpsScore.you===5||rpsScore.computer===5)statusBox.textContent=rpsScore.you===5?'🏆 YOU WON THE MATCH!':'💻 COMPUTER WON THE MATCH!'}
+</script>
+</body>
+</html>
